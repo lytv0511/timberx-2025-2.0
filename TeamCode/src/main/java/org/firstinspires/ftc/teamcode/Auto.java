@@ -5,7 +5,6 @@ import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
@@ -16,8 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 
 @Autonomous(name="Auto")
-public class Auto extends LinearOpMode
-{
+public class Auto extends LinearOpMode {
     // Hardware map variables
     private DcMotor leftFront = null;
     private DcMotor leftBack = null;
@@ -40,9 +38,7 @@ public class Auto extends LinearOpMode
     private double rightBackPower = 0;
     private double max = 0;
 
-
-    @Override public void runOpMode()
-    {
+    @Override public void runOpMode() {
         // Initialize the hardware variables and set the direction and zero power behavior
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
         leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
@@ -70,8 +66,7 @@ public class Auto extends LinearOpMode
         telemetry.update();
         waitForStart();
 
-        if (opModeIsActive())
-        {
+        if (opModeIsActive()) {
             leftFront.setPower(0.5);
             rightFront.setPower(0.5);
             leftBack.setPower(0.5);
@@ -83,10 +78,6 @@ public class Auto extends LinearOpMode
             rightFront.setPower(0);
             leftBack.setPower(0);
             rightBack.setPower(0);
-
-
-
         }
     }
-
 }

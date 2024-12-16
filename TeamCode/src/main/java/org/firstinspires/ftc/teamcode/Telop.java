@@ -9,8 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name="Telop")
-public class Telop extends LinearOpMode
-{
+public class Telop extends LinearOpMode {
     // Hardware map variables
     private DcMotor leftFront = null;
     private DcMotor leftBack = null;
@@ -35,8 +34,7 @@ public class Telop extends LinearOpMode
     private ElapsedTime timer = new ElapsedTime();
 
 
-    @Override public void runOpMode()
-    {
+    @Override public void runOpMode() {
         // Initialize the hardware variables and set the direction and zero power behavior
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
         leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
@@ -64,8 +62,7 @@ public class Telop extends LinearOpMode
         telemetry.update();
         waitForStart();
 
-        while (opModeIsActive())
-        {
+        while (opModeIsActive()) {
 
             //*************************************************************************
             //  CONTROLS
@@ -94,13 +91,13 @@ public class Telop extends LinearOpMode
 
 
             if (gamepad1.a && !gamepad1.b) {
-                armMotor.setPower(10); // Move the arm up
+                armMotor.setPower(10); // up
             } else {
                 armMotor.setPower(0);
             }
 
             if (gamepad1.b && !gamepad1.a) {
-                armMotor.setPower(-10);
+                armMotor.setPower(-10); // down
             } else {
                 armMotor.setPower(0);
             }
@@ -170,5 +167,4 @@ public class Telop extends LinearOpMode
             idle();
         }
     }
-
 }
