@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
+//import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -15,18 +15,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 
 @Autonomous(name="Auto")
-public class Auto extends LinearOpMode {
+public class Auto extends LinearOpMode
+{
     // Hardware map variables
     private DcMotor leftFront = null;
     private DcMotor leftBack = null;
     private DcMotor rightBack = null;
     private DcMotor rightFront = null;
-    private DcMotor armMotor = null;
     private DcMotor linearLeft = null;
     private DcMotor linearRight = null;
-    private CRServo intakeServo = null;
-    private Servo trayTiltServoRight = null;
-    private Servo trayTiltServoLeft = null;
+    private Servo clawServo = null;
+    private Servo clawArmServo = null;
 
     // Motor control variables
     private double drive = 0;
@@ -38,18 +37,18 @@ public class Auto extends LinearOpMode {
     private double rightBackPower = 0;
     private double max = 0;
 
-    @Override public void runOpMode() {
+
+    @Override public void runOpMode()
+    {
         // Initialize the hardware variables and set the direction and zero power behavior
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
         leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
         rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
         rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
-        armMotor = hardwareMap.get(DcMotorEx.class, "armMotor");
         linearLeft = hardwareMap.get(DcMotorEx.class, "linearLeft");
         linearRight = hardwareMap.get(DcMotorEx.class, "linearRight");
-        intakeServo = hardwareMap.get(CRServo.class, "intakeServo");
-        trayTiltServoRight = hardwareMap.get(Servo.class, "trayTiltServoRight");
-        trayTiltServoLeft = hardwareMap.get(Servo.class, "trayTiltServoLeft");
+        clawServo = hardwareMap.get(Servo.class, "clawServo");
+        clawArmServo = hardwareMap.get(Servo.class, "clawArmServo");
 
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -62,11 +61,12 @@ public class Auto extends LinearOpMode {
 
         //*************************************************************************
         // Wait for driver to press start
-        telemetry.addData("TELEOP - Ready team!", "Press Play Button");
+        telemetry.addData("Autonomous - Ready team!", "Press Play Button");
         telemetry.update();
         waitForStart();
 
-        if (opModeIsActive()) {
+        if (opModeIsActive())
+        {
             leftFront.setPower(0.5);
             rightFront.setPower(0.5);
             leftBack.setPower(0.5);
@@ -78,6 +78,10 @@ public class Auto extends LinearOpMode {
             rightFront.setPower(0);
             leftBack.setPower(0);
             rightBack.setPower(0);
+
+
+
         }
     }
+
 }
