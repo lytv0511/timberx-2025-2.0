@@ -1,13 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 @TeleOp(name="StudioTeleop")
 public class StudioTeleop extends LinearOpMode {
@@ -36,11 +33,16 @@ public class StudioTeleop extends LinearOpMode {
         telemetry.update();
         waitForStart();
 
-        // Flags for mode tracking
         boolean isHoverMode = false;
         boolean isRetractMode = false;
-        boolean isModeTwo = false; // Toggle between mode 1 and mode 2
+         boolean isModeTwo = false;
         boolean leftStickButtonPressed = false;
+        boolean isTurnInProgress = false;
+        boolean holdSlidesMode = false;
+        boolean isNormalGrabClosed = false;
+        boolean isForceGrabClosed = false;
+        boolean yButtonPressed = false;
+        boolean xButtonPressed = false;
 
         linearLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         linearRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -49,7 +51,7 @@ public class StudioTeleop extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            // Toggle between Mode 1 and Mode 2 when left stick button is pressed
+            // Toggle between Mode 1 and Mode 2 (Inverting Movement)
             if (gamepad1.left_stick_button && !leftStickButtonPressed) {
                 isModeTwo = !isModeTwo;
                 leftStickButtonPressed = true;
@@ -58,24 +60,129 @@ public class StudioTeleop extends LinearOpMode {
                 leftStickButtonPressed = false;
             }
 
-            // Right trigger (Hover mode) logic
-            if (gamepad1.right_trigger > 0 && !isHoverMode) {
+            // Toggle Normal Grab (Y button)
+            if (gamepad1.y && !yButtonPressed) {
+                isNormalGrabClosed = !isNormalGrabClosed;
+                isForceGrabClosed = false;
+                clawServo.setPosition(isNormalGrabClosed ? 0.4 : 0.6);
+                yButtonPressed = true;
+            }
+            if (!gamepad1.y) {
+                yButtonPressed = false;
+            }
+
+            // Toggle Force Grab (X button)
+            if (gamepad1.x && !xButtonPressed) {
+                isForceGrabClosed = !isForceGrabClosed;
+                isNormalGrabClosed = false;
+                clawServo.setPosition(isForceGrabClosed ? 0.4 : 0.7);
+                xButtonPressed = true;
+            }
+            if (!gamepad1.x) {
+                xButtonPressed = false;
+            }
+
+            boolean sweepingMode = false;
+            boolean sweepingDirection = true;
+            long lastSweepTime = System.currentTimeMillis();
+            long sweepInterval = 500; // Adjust speed of sweeping motion
+
+            if (gamepad1.b) {
+                clawArmServo.setPosition(0.1);
+                clawServo.setPosition(0.4); // Open claw
+                sweepingMode = true;
+                telemetry.update();
+
+                while (gamepad1.b && opModeIsActive()) {
+                    double sweepPower = 0.5;
+
+                    // Sweep in one direction
+                    leftFront.setPower(sweepPower);
+                    leftBack.setPower(sweepPower);
+                    rightFront.setPower(sweepPower);
+                    rightBack.setPower(sweepPower);
+                    sleep(500);
+
+                    // Reverse sweeping direction
+                    leftFront.setPower(-sweepPower);
+                    leftBack.setPower(-sweepPower);
+                    rightFront.setPower(-sweepPower);
+                    rightBack.setPower(-sweepPower);
+                    sleep(500);
+                }
+
+                // Stop movement when B is released
+                leftFront.setPower(0);
+                rightFront.setPower(0);
+                leftBack.setPower(0);
+                rightBack.setPower(0);
+            }
+
+
+            // 180 Degree Turn (A button)
+            if (gamepad1.a && !isTurnInProgress) {
+                isTurnInProgress = true;
+                isModeTwo = !isModeTwo; // Invert movement mode
+                clawArmServo.setPosition(0.9);
+
+                double turnPower = 1.0;
+                long turnTime = 825;
+
+                leftFront.setPower(turnPower);
+                rightFront.setPower(turnPower);
+                leftBack.setPower(turnPower);
+                rightBack.setPower(turnPower);
+
+                sleep(turnTime);
+
+                leftFront.setPower(0);
+                rightFront.setPower(0);
+                leftBack.setPower(0);
+                rightBack.setPower(0);
+
+                isTurnInProgress = false;
+            }
+
+            // Claw Arm Hover & Retract (Triggers)
+            if (gamepad1.right_trigger > 0) {
                 isHoverMode = true;
-                clawArmServo.setPosition(0.2); // Hover position
+                clawArmServo.setPosition(0.2);
             }
             if (gamepad1.right_trigger == 0 && isHoverMode) {
                 isHoverMode = false;
-                clawArmServo.setPosition(0.12); // Down position when released
+                clawArmServo.setPosition(0.1);
             }
 
-            // Left trigger (Retract mode) logic
-            if (gamepad1.left_trigger > 0 && !isRetractMode) {
+            if (gamepad1.left_trigger > 0) {
                 isRetractMode = true;
-                clawArmServo.setPosition(0.2); // Hover position
+                clawArmServo.setPosition(0.2);
             }
             if (gamepad1.left_trigger == 0 && isRetractMode) {
                 isRetractMode = false;
-                clawArmServo.setPosition(0.9); // Retract position when released
+                clawArmServo.setPosition(0.9);
+            }
+
+            // Slides Control with D-Pad
+            if (gamepad1.dpad_up) {
+                linearLeft.setPower(-1);
+                linearRight.setPower(1);
+            } else if (gamepad1.dpad_down) {
+                linearLeft.setPower(0.5);
+                linearRight.setPower(-0.5);
+            } else if (gamepad1.dpad_right) {
+                holdSlidesMode = false;
+            } else if (gamepad1.dpad_left) {
+                holdSlidesMode = false;
+            } else if (gamepad1.left_bumper) {
+                holdSlidesMode = true;
+            }
+
+            if (holdSlidesMode && !gamepad1.dpad_up && !gamepad1.dpad_down) {
+                linearLeft.setPower(-0.1);
+                linearRight.setPower(0.1);
+            } else if (!gamepad1.dpad_up && !gamepad1.dpad_down) {
+                linearLeft.setPower(0);
+                linearRight.setPower(0);
             }
 
             // Movement logic
@@ -83,7 +190,6 @@ public class StudioTeleop extends LinearOpMode {
             double strafe = -gamepad1.left_stick_x;
             double turn = gamepad1.right_stick_x;
 
-            // If in mode 2, reverse forward/backward and right/left, but keep turning the same
             if (isModeTwo) {
                 drive = -drive;
                 strafe = -strafe;
@@ -103,37 +209,32 @@ public class StudioTeleop extends LinearOpMode {
             leftBack.setPower(leftBackPower / max);
             rightBack.setPower(rightBackPower / max);
 
-            // Linear slide controls
-            double linearPower = 0;
-            if (gamepad1.dpad_up) linearPower = -0.8;
-            if (gamepad1.dpad_down) linearPower = 0.8;
+            // Telemetry updates
+            telemetry.addData("Mode", isModeTwo ? "Scoring Mode" : "Pickup Mode");;
+            telemetry.addData("Hold Slides Mode", holdSlidesMode ? "Active" : "Inactive");
+            telemetry.addData("Aiming Mode", isHoverMode ? "Aiming hover" : "Ground");
+            telemetry.addData("Retract Mode", isRetractMode ? "Retract hover" : "Retracted");
 
-            linearLeft.setPower(linearPower);
-            linearRight.setPower(-linearPower);
+            telemetry.addData("Motor Positions",
+                    "LF: %d | LB: %d | RF: %d | RB: %d",
+                    leftFront.getCurrentPosition(), leftBack.getCurrentPosition(),
+                    rightFront.getCurrentPosition(), rightBack.getCurrentPosition());
 
-            // Claw controls
-            if (gamepad1.a) clawServo.setPosition(0.7);
-            if (gamepad1.b) clawServo.setPosition(0.4);
+            telemetry.addData("Slide Motor Positions",
+                    "LL: %d | LR: %d",
+                    linearLeft.getCurrentPosition(), linearRight.getCurrentPosition());
 
-            telemetry.addData("Mode", isModeTwo ? "Scoring Mode" : "Pickup Mode");
-            telemetry.addData("Hover Mode", isHoverMode ? "Active" : "Inactive");
-            telemetry.addData("Retract Mode", isRetractMode ? "Active" : "Inactive");
-            telemetry.addData("Left Front Power", leftFront.getPower());
-            telemetry.addData("Left Front Position", leftFront.getCurrentPosition());
-            telemetry.addData("Right Front Power", rightFront.getPower());
-            telemetry.addData("Right Front Position", rightFront.getCurrentPosition());
-            telemetry.addData("Left Back Power", leftBack.getPower());
-            telemetry.addData("Left Back Position", leftBack.getCurrentPosition());
-            telemetry.addData("Right Back Power", rightBack.getPower());
-            telemetry.addData("Right Back Position", rightBack.getCurrentPosition());
-            telemetry.addData("Claw Position", clawServo.getPosition());
-            telemetry.addData("Claw Arm Position", clawArmServo.getPosition());
-            telemetry.addData("Linear Left Power", linearLeft.getPower());
-            telemetry.addData("Linear Left Position", linearLeft.getCurrentPosition());
-            telemetry.addData("Linear Right Power", linearRight.getPower());
-            telemetry.addData("Linear Right Position", linearRight.getCurrentPosition());
+            telemetry.addData("Motor Powers",
+                    "LF: %.2f | LB: %.2f | RF: %.2f | RB: %.2f",
+                    leftFront.getPower(), leftBack.getPower(), rightFront.getPower(), rightBack.getPower());
+
+            telemetry.addData("Slide Motor Powers",
+                    "LL: %.2f | LR: %.2f",
+                    linearLeft.getPower(), linearRight.getPower());
+
             telemetry.update();
 
+            telemetry.update();
             idle();
         }
     }
