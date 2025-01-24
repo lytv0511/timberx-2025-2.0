@@ -75,7 +75,7 @@ public class StudioTeleop extends LinearOpMode {
             }
             if (gamepad1.left_trigger == 0 && isRetractMode) {
                 isRetractMode = false;
-                clawArmServo.setPosition(0.8); // Retract position when released
+                clawArmServo.setPosition(0.9); // Retract position when released
             }
 
             // Movement logic
