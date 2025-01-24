@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 
-@Autonomous(name="Auto")
-public class Auto extends LinearOpMode
+@Autonomous(name="StudioAuto")
+public class StudioAuto extends LinearOpMode
 {
     // Hardware map variables
     private DcMotor leftFront = null;

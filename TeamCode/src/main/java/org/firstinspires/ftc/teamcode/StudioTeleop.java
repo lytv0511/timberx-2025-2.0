@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-@TeleOp(name="Teleop")
-public class Teleop extends LinearOpMode {
+@TeleOp(name="StudioTeleop")
+public class StudioTeleop extends LinearOpMode {
     private DcMotor leftFront, leftBack, rightBack, rightFront, linearLeft, linearRight;
     private Servo clawServo, clawArmServo;
 
@@ -39,6 +39,8 @@ public class Teleop extends LinearOpMode {
         // Flags for mode tracking
         boolean isHoverMode = false;
         boolean isRetractMode = false;
+        boolean isModeTwo = false; // Toggle between mode 1 and mode 2
+        boolean leftStickButtonPressed = false;
 
         linearLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         linearRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -47,30 +49,45 @@ public class Teleop extends LinearOpMode {
 
         while (opModeIsActive()) {
 
+            // Toggle between Mode 1 and Mode 2 when left stick button is pressed
+            if (gamepad1.left_stick_button && !leftStickButtonPressed) {
+                isModeTwo = !isModeTwo;
+                leftStickButtonPressed = true;
+            }
+            if (!gamepad1.left_stick_button) {
+                leftStickButtonPressed = false;
+            }
+
             // Right trigger (Hover mode) logic
             if (gamepad1.right_trigger > 0 && !isHoverMode) {
                 isHoverMode = true;
-                clawArmServo.setPosition(0.6); // Hover position
+                clawArmServo.setPosition(0.1); // Hover position
             }
             if (gamepad1.right_trigger == 0 && isHoverMode) {
                 isHoverMode = false;
-                clawArmServo.setPosition(0.72); // Down position when released
+                clawArmServo.setPosition(0); // Down position when released
             }
 
             // Left trigger (Retract mode) logic
             if (gamepad1.left_trigger > 0 && !isRetractMode) {
                 isRetractMode = true;
-                clawArmServo.setPosition(0.6); // Hover position
+                clawArmServo.setPosition(0.1); // Hover position
             }
             if (gamepad1.left_trigger == 0 && isRetractMode) {
                 isRetractMode = false;
-                clawArmServo.setPosition(0.2); // Retract position when released
+                clawArmServo.setPosition(0.90); // Retract position when released
             }
 
-            // Movement logic (same for both modes)
+            // Movement logic
             double drive = -gamepad1.left_stick_y;
             double strafe = -gamepad1.left_stick_x;
             double turn = gamepad1.right_stick_x;
+
+            // If in mode 2, reverse forward/backward and right/left, but keep turning the same
+            if (isModeTwo) {
+                drive = -drive;
+                strafe = -strafe;
+            }
 
             double leftFrontPower = -(drive - strafe + turn);
             double rightFrontPower = drive + strafe - turn;
@@ -98,6 +115,7 @@ public class Teleop extends LinearOpMode {
             if (gamepad1.a) clawServo.setPosition(0.7);
             if (gamepad1.b) clawServo.setPosition(0.4);
 
+            telemetry.addData("Mode", isModeTwo ? "Scoring Mode" : "Pickup Mode");
             telemetry.addData("Hover Mode", isHoverMode ? "Active" : "Inactive");
             telemetry.addData("Retract Mode", isRetractMode ? "Active" : "Inactive");
             telemetry.addData("Left Front Power", leftFront.getPower());

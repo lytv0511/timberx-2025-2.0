@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 
 @Disabled
-@Autonomous(name="ConceptAuto")
-public class ConceptAuto extends LinearOpMode {
+@Autonomous(name="StudioConceptAuto")
+public class StudioConceptAuto extends LinearOpMode {
 
     private DcMotor leftFront = null;
     private DcMotor leftBack = null;
