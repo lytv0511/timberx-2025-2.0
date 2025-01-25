@@ -126,7 +126,7 @@ public class StudioTeleop extends LinearOpMode {
                 clawArmServo.setPosition(0.9);
 
                 double turnPower = 1.0;
-                long turnTime = 825;
+                long turnTime = 880;
 
                 leftFront.setPower(turnPower);
                 rightFront.setPower(turnPower);
@@ -167,8 +167,8 @@ public class StudioTeleop extends LinearOpMode {
                 linearLeft.setPower(-1);
                 linearRight.setPower(1);
             } else if (gamepad1.dpad_down) {
-                linearLeft.setPower(0.5);
-                linearRight.setPower(-0.5);
+                linearLeft.setPower(1);
+                linearRight.setPower(-1);
             } else if (gamepad1.dpad_right) {
                 holdSlidesMode = false;
             } else if (gamepad1.dpad_left) {
