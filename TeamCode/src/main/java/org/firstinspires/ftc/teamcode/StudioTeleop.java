@@ -35,7 +35,11 @@ public class StudioTeleop extends LinearOpMode {
 
         boolean isHoverMode = false;
         boolean isRetractMode = false;
+<<<<<<< HEAD
          boolean isModeTwo = false;
+=======
+        boolean isModeTwo = false;
+>>>>>>> 9e4ea7d (StudioTeleop RC)
         boolean leftStickButtonPressed = false;
         boolean isTurnInProgress = false;
         boolean holdSlidesMode = false;
