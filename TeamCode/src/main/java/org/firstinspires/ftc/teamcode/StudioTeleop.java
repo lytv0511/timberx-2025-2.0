@@ -143,12 +143,14 @@ public class StudioTeleop extends LinearOpMode {
                 isTurnInProgress = false;
             }
 
+            boolean hanging = false;
+
             // Claw Arm Hover & Retract (Triggers)
             if (gamepad1.right_trigger > 0) {
                 isHoverMode = true;
                 clawArmServo.setPosition(0.2);
             }
-            if (gamepad1.right_trigger == 0 && isHoverMode) {
+            if (gamepad1.right_trigger == 0 && isHoverMode && !hanging) {
                 isHoverMode = false;
                 clawArmServo.setPosition(0.1);
             }
@@ -160,6 +162,12 @@ public class StudioTeleop extends LinearOpMode {
             if (gamepad1.left_trigger == 0 && isRetractMode) {
                 isRetractMode = false;
                 clawArmServo.setPosition(0.9);
+            }
+            if (gamepad1.right_bumper) {
+                hanging = true;
+                clawArmServo.setPosition(0.4);
+            } else if (!gamepad1.right_bumper) {
+                hanging = false;
             }
 
             // Slides Control with D-Pad
