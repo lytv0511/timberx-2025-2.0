@@ -1,8 +1,8 @@
+// ThreeWheelOdometryTest.java
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class ThreeWheelOdometryTest {
     // Odometry (Dead Wheel) Encoders
@@ -80,13 +80,5 @@ public class ThreeWheelOdometryTest {
 
     public double getHeading() {
         return heading;
-    }
-
-    // Debugging: Print to telemetry
-    public void displayPose(Telemetry telemetry) {
-        telemetry.addData("X", x);
-        telemetry.addData("Y", y);
-        telemetry.addData("Heading (rad)", heading);
-        telemetry.update();
     }
 }

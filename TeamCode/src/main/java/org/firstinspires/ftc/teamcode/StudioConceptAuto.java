@@ -1,126 +1,193 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.Range;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.FileHandler;
+import com.qualcomm.robotcore.hardware.Servo;
 
-@Disabled
-@Autonomous(name="StudioConceptAuto")
+@Autonomous(name = "StudioConceptAuto", group = "Autonomous")
 public class StudioConceptAuto extends LinearOpMode {
+    // Declare four drive motors
+    private DcMotor leftFront, rightFront, leftBack, rightBack;
 
-    private DcMotor leftFront = null;
-    private DcMotor leftBack = null;
-    private DcMotor rightBack = null;
-    private DcMotor rightFront = null;
-    private double drive = 0;
-    private double strafe = 0;
-    private double turn = 0;
-    private double leftFrontPower = 0;
-    private double rightFrontPower = 0;
-    private double leftBackPower = 0;
-    private double rightBackPower = 0;
-    private double max = 0;
+    // Declare servos
+    private Servo clawServo, clawArmServo;
 
-    @Override public void runOpMode() {
-        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
-        leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
-        rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
-        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+    // Declare odometry system
+    private ThreeWheelOdometryTest odometry;
 
+    // Correction factors
+    private static final double strafeCorrectionFactor = 10.0 / 9.0;
+    private static final double forwardBackwardCorrectionFactor = 10.0 / 11.0;
+    private static final double angleCorrectionFactor = 90.0 / 45.0;
+
+    @Override
+    public void runOpMode() throws InterruptedException {
+        // Initialize motors
+        leftFront = hardwareMap.get(DcMotor.class, "leftFront");
+        rightFront = hardwareMap.get(DcMotor.class, "rightFront");
+        leftBack = hardwareMap.get(DcMotor.class, "leftBack");
+        rightBack = hardwareMap.get(DcMotor.class, "rightBack");
+        clawServo = hardwareMap.get(Servo.class, "clawServo");
+        clawArmServo = hardwareMap.get(Servo.class, "clawArmServo");
+
+        // Set motor directions
+        leftFront.setDirection(DcMotor.Direction.FORWARD);
+        rightFront.setDirection(DcMotor.Direction.REVERSE);
+        leftBack.setDirection(DcMotor.Direction.FORWARD);
+        rightBack.setDirection(DcMotor.Direction.REVERSE);
+
+        // Set motor zero power behavior
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        telemetry.addData("TELEOP - Ready team!", "Press Play Button");
+        // Initialize odometry
+        odometry = new ThreeWheelOdometryTest(hardwareMap);
+
+        telemetry.addData("Status", "Waiting for start command...");
         telemetry.update();
         waitForStart();
 
-        while (opModeIsActive()) {
-            if (drive == 0 && strafe == 0 && turn == 0) {
-                // Stop the robot
-                leftFront.setPower(0);
-                rightFront.setPower(0);
-                leftBack.setPower(0);
-                rightBack.setPower(0);
-
-            } else {
-                // Calculate power for each wheel by combining the calculated values for each direction
-                leftFrontPower = drive - strafe + turn;
-                rightFrontPower = drive + strafe - turn;
-                leftBackPower = drive + strafe + turn;
-                rightBackPower = drive - strafe - turn;
-
-                // Find the maximum value of all the wheel powers
-                max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
-                max = Math.max(max, Math.abs(leftBackPower));
-                max = Math.max(max, Math.abs(rightBackPower));
-
-                // If the maximum value is greater than 1 (max power you can send to wheels), then normalize all the wheel powers by dividing by the maximum value.
-                // The normalization process keeps the same ratio of power between the wheels, but makes sure that no wheel power is greater than 1.
-                if (max > 1) {
-                    leftFrontPower = leftFrontPower / max;
-                    rightFrontPower = rightFrontPower / max;
-                    leftBackPower = leftBackPower / max;
-                    rightBackPower = rightBackPower / max;
-                }
-
-                // Send power to wheels
-                leftFront.setPower(leftFrontPower);
-                rightFront.setPower(rightFrontPower);
-                leftBack.setPower(leftBackPower);
-                rightBack.setPower(rightBackPower);
-            }
-        }
         if (opModeIsActive()) {
-            blockOnePath();
+            odometry.updatePose();
+
+            // Claw arm initialization
+            clawArmServo.setPosition(0.87);
+            sleep(500);
+
+            // Autonomous movements using odometry
+            moveUsingOdometry(0.5, 36, 0);
+            moveUsingOdometry(0.5, 0, -54);
+            turnUsingOdometry(0.3, -45);
+            moveUsingOdometry(0.5, 0, -13);
+
+            // Claw operations
+            clawArmServo.setPosition(0.87);
+            clawServo.setPosition(0.4);
+            sleep(1000);
+            clawArmServo.setPosition(0.17);
+            moveUsingOdometry(0.5, 0, 13);
+            moveUsingOdometry(0.5, 0, 3);
+            turnUsingOdometry(0.3, -45);
+
+            // Second placement
+            clawArmServo.setPosition(0.07);
+            sleep(1000);
+            moveUsingOdometry(0.5, 0, 14);
+            clawServo.setPosition(0.7);
+            sleep(1000);
+            clawArmServo.setPosition(0.88);
+            sleep(1000);
+            moveUsingOdometry(0.5, 0, -14);
+            moveUsingOdometry(0.5, 0, -3);
+            turnUsingOdometry(0.3, 45);
+
+            // Third placement
+            moveUsingOdometry(0.5, 0, -13);
+            clawArmServo.setPosition(0.87);
+            clawServo.setPosition(0.4);
+            sleep(1000);
+            clawArmServo.setPosition(0.17);
+            moveUsingOdometry(0.5, 0, 13);
+            moveUsingOdometry(0.5, 0, 3);
+            turnUsingOdometry(0.3, -45);
+
+            // Move to final position
+            moveUsingOdometry(0.5, 31, 0);
+            clawArmServo.setPosition(0.07);
+            sleep(1000);
+            moveUsingOdometry(0.5, 0, 14);
+            clawServo.setPosition(0.7);
+            sleep(1000);
+            clawArmServo.setPosition(0.87);
+            sleep(1000);
+            moveUsingOdometry(0.5, 0, -14);
+            moveUsingOdometry(0.5, -31, 0);
+            turnUsingOdometry(0.3, 45);
+
+            telemetry.addData("Status", "Task complete");
+            telemetry.update();
         }
     }
 
-    // drive is forward and backward
-    // strafe is left and right
-    // turn is turning clockwise and anticlockwise
-    private void forward(double fMagnitude) {
-        drive = fMagnitude;
-        strafe = 0;
-        turn = 0;
+    // Drive functions using odometry
+    private void moveUsingOdometry(double speed, double strafeDistance, double forwardDistance) throws InterruptedException {
+        double correctedStrafeDistance = strafeDistance * strafeCorrectionFactor;
+        double correctedForwardDistance = forwardDistance * forwardBackwardCorrectionFactor;
+
+        odometry.updatePose();
+        double targetX = odometry.getX() + correctedStrafeDistance;
+        double targetY = odometry.getY() + correctedForwardDistance;
+
+        while (opModeIsActive() && !hasReachedTarget(targetX, targetY)) {
+            odometry.updatePose();
+
+            double errorX = targetX - odometry.getX();
+            double errorY = targetY - odometry.getY();
+
+            double drive = errorY * speed;
+            double strafe = errorX * speed;
+
+            setMotorPowers(drive, strafe, 0);
+
+            telemetry.addData("X", odometry.getX());
+            telemetry.addData("Y", odometry.getY());
+            telemetry.addData("Target X", targetX);
+            telemetry.addData("Target Y", targetY);
+            telemetry.update();
+        }
+
+        stopDriving();
     }
-    private void backward(double bMagnitude) {
-        drive = -bMagnitude;
-        strafe = 0;
-        turn = 0;
+
+    private void turnUsingOdometry(double speed, double angle) throws InterruptedException {
+        double correctedAngle = angle * angleCorrectionFactor;
+
+        odometry.updatePose();
+        double targetHeading = odometry.getHeading() + Math.toRadians(correctedAngle);
+
+        while (opModeIsActive() && !hasReachedHeading(targetHeading)) {
+            odometry.updatePose();
+
+            double errorHeading = targetHeading - odometry.getHeading();
+            double turn = errorHeading * speed;
+
+            setMotorPowers(0, 0, turn);
+
+            telemetry.addData("Heading", odometry.getHeading());
+            telemetry.addData("Target Heading", targetHeading);
+            telemetry.update();
+        }
+
+        stopDriving();
     }
-    private void leftward(double lMagnitude) {
-        drive = 0;
-        strafe = lMagnitude;
-        turn = 0;
+
+    private void setMotorPowers(double drive, double strafe, double turn) {
+        double lfPower = drive + strafe + turn;
+        double rfPower = drive - strafe - turn;
+        double lbPower = drive - strafe + turn;
+        double rbPower = drive + strafe - turn;
+
+        leftFront.setPower(lfPower);
+        rightFront.setPower(rfPower);
+        leftBack.setPower(lbPower);
+        rightBack.setPower(rbPower);
     }
-    private void rightward(double rMagnitude) {
-        drive = 0;
-        strafe = -rMagnitude;
-        turn = 0;
+
+    private boolean hasReachedTarget(double targetX, double targetY) {
+        return Math.abs(targetX - odometry.getX()) < 0.5 && Math.abs(targetY - odometry.getY()) < 0.5;
     }
-    private void zeroPower() {
-        drive = 0;
-        strafe = 0;
-        turn = 0;
+
+    private boolean hasReachedHeading(double targetHeading) {
+        return Math.abs(targetHeading - odometry.getHeading()) < Math.toRadians(2.5);
     }
-    private void blockOnePath() {
-        forward(10);
-        sleep(1000);
-        backward(10);
-        sleep(1000);
-        zeroPower();
+
+    private void stopDriving() {
+        leftFront.setPower(0);
+        rightFront.setPower(0);
+        leftBack.setPower(0);
+        rightBack.setPower(0);
     }
 }
