@@ -1,74 +1,57 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class ThreeWheelOdometryTest {
-    private DcMotor leftEncoder, rightEncoder, strafeEncoder;
+    private DcMotorEx leftEncoderMotor, rightEncoderMotor, strafeEncoderMotor;
+    private double x = 0, y = 0, heading = 0;
 
-    private static final double ODOMETRY_TICKS_PER_REV = 8192; // Adjust based on your encoder specs
-    private static final double WHEEL_DIAMETER_INCHES = 2.0; // Adjust based on your odometry wheels
-    private static final double ODOMETRY_COUNTS_PER_INCH = ODOMETRY_TICKS_PER_REV / (Math.PI * WHEEL_DIAMETER_INCHES);
+    private int leftEncoderOffset = 0;
+    private int rightEncoderOffset = 0;
+    private int strafeEncoderOffset = 0;
 
-    private double x, y, heading;
-
-    public int getLeftEncoderTicks() {
-        return leftEncoder.getCurrentPosition();
-    }
-
-    public int getRightEncoderTicks() {
-        return rightEncoder.getCurrentPosition();
-    }
-
-    public int getStrafeEncoderTicks() {
-        return strafeEncoder.getCurrentPosition();
-    }
+    private static final double STRAFE_CONVERSION_FACTOR = 0.001; // Placeholder value
+    private static final double FORWARD_CONVERSION_FACTOR = 0.001; // Placeholder value
+    private static final double HEADING_CONVERSION_FACTOR = 0.001; // Placeholder value
 
     public ThreeWheelOdometryTest(HardwareMap hardwareMap) {
-        leftEncoder = hardwareMap.get(DcMotor.class, "leftEncoder");
-        rightEncoder = hardwareMap.get(DcMotor.class, "rightEncoder");
-        strafeEncoder = hardwareMap.get(DcMotor.class, "strafeEncoder");
+        leftEncoderMotor = hardwareMap.get(DcMotorEx.class, "leftEncoder");
+        rightEncoderMotor = hardwareMap.get(DcMotorEx.class, "rightEncoder");
+        strafeEncoderMotor = hardwareMap.get(DcMotorEx.class, "strafeEncoder");
 
-        leftEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        strafeEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        resetEncoders();
+    }
 
-        leftEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        strafeEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    public void resetEncoders() {
+        leftEncoderOffset = leftEncoderMotor.getCurrentPosition();
+        rightEncoderOffset = rightEncoderMotor.getCurrentPosition();
+        strafeEncoderOffset = strafeEncoderMotor.getCurrentPosition();
+
+        x = 0;
+        y = 0;
+        heading = 0;
     }
 
     public void updatePose() {
-        double leftTicks = leftEncoder.getCurrentPosition();
-        double rightTicks = rightEncoder.getCurrentPosition();
-        double strafeTicks = strafeEncoder.getCurrentPosition();
+        double leftEncoder = leftEncoderMotor.getCurrentPosition() - leftEncoderOffset;
+        double rightEncoder = rightEncoderMotor.getCurrentPosition() - rightEncoderOffset;
+        double strafeEncoder = strafeEncoderMotor.getCurrentPosition() - strafeEncoderOffset;
 
-        double leftInches = leftTicks / ODOMETRY_COUNTS_PER_INCH;
-        double rightInches = rightTicks / ODOMETRY_COUNTS_PER_INCH;
-        double strafeInches = strafeTicks / ODOMETRY_COUNTS_PER_INCH;
+        double deltaX = strafeEncoder * STRAFE_CONVERSION_FACTOR;
+        double deltaY = (leftEncoder + rightEncoder) / 2.0 * FORWARD_CONVERSION_FACTOR;
+        double deltaHeading = (rightEncoder - leftEncoder) * HEADING_CONVERSION_FACTOR;
 
-        x = strafeInches; // Strafe movement
-        y = (leftInches + rightInches) / 2.0; // Forward movement
-        heading = (rightInches - leftInches) / 12.0; // Adjust based on your robot's track width
+        x += deltaX;
+        y += deltaY;
+        heading += deltaHeading;
     }
 
-    public double getX() {
-        return x;
-    }
+    public double getX() { return x; }
+    public double getY() { return y; }
+    public double getHeading() { return heading; }
 
-    public double getY() {
-        return y;
-    }
-
-    public double getHeading() {
-        return heading;
-    }
-
-    public int getRawX() {
-        return strafeEncoder.getCurrentPosition();
-    }
-
-    public int getRawY() {
-        return (leftEncoder.getCurrentPosition() + rightEncoder.getCurrentPosition()) / 2;
-    }
+    public int getLeftEncoderTicks() { return leftEncoderMotor.getCurrentPosition() - leftEncoderOffset; }
+    public int getRightEncoderTicks() { return rightEncoderMotor.getCurrentPosition() - rightEncoderOffset; }
+    public int getStrafeEncoderTicks() { return strafeEncoderMotor.getCurrentPosition() - strafeEncoderOffset; }
 }

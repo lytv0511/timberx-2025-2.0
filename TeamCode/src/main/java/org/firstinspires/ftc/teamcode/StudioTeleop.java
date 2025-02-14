@@ -17,8 +17,8 @@ public class StudioTeleop extends LinearOpMode {
         leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
         rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
         rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
-        linearLeft = hardwareMap.get(DcMotorEx.class, "linearLeft");
-        linearRight = hardwareMap.get(DcMotorEx.class, "linearRight");
+//        linearLeft = hardwareMap.get(DcMotorEx.class, "linearLeft");
+//        linearRight = hardwareMap.get(DcMotorEx.class, "linearRight");
         clawServo = hardwareMap.get(Servo.class, "clawServo");
         clawArmServo = hardwareMap.get(Servo.class, "clawArmServo");
 
@@ -26,8 +26,8 @@ public class StudioTeleop extends LinearOpMode {
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        linearLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        linearRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        linearLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        linearRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -44,10 +44,10 @@ public class StudioTeleop extends LinearOpMode {
         boolean yButtonPressed = false;
         boolean xButtonPressed = false;
 
-        linearLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        linearRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        linearLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        linearRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        linearLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        linearRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        linearLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        linearRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         while (opModeIsActive()) {
 
@@ -171,27 +171,27 @@ public class StudioTeleop extends LinearOpMode {
             }
 
             // Slides Control with D-Pad
-            if (gamepad1.dpad_up) {
-                linearLeft.setPower(-1);
-                linearRight.setPower(1);
-            } else if (gamepad1.dpad_down) {
-                linearLeft.setPower(1);
-                linearRight.setPower(-1);
-            } else if (gamepad1.dpad_right) {
-                holdSlidesMode = false;
-            } else if (gamepad1.dpad_left) {
-                holdSlidesMode = false;
-            } else if (gamepad1.left_bumper) {
-                holdSlidesMode = true;
-            }
-
-            if (holdSlidesMode && !gamepad1.dpad_up && !gamepad1.dpad_down) {
-                linearLeft.setPower(-0.1);
-                linearRight.setPower(0.1);
-            } else if (!gamepad1.dpad_up && !gamepad1.dpad_down) {
-                linearLeft.setPower(0);
-                linearRight.setPower(0);
-            }
+//            if (gamepad1.dpad_up) {
+//                linearLeft.setPower(-1);
+//                linearRight.setPower(1);
+//            } else if (gamepad1.dpad_down) {
+//                linearLeft.setPower(1);
+//                linearRight.setPower(-1);
+//            } else if (gamepad1.dpad_right) {
+//                holdSlidesMode = false;
+//            } else if (gamepad1.dpad_left) {
+//                holdSlidesMode = false;
+//            } else if (gamepad1.left_bumper) {
+//                holdSlidesMode = true;
+//            }
+//
+//            if (holdSlidesMode && !gamepad1.dpad_up && !gamepad1.dpad_down) {
+//                linearLeft.setPower(-0.1);
+//                linearRight.setPower(0.1);
+//            } else if (!gamepad1.dpad_up && !gamepad1.dpad_down) {
+//                linearLeft.setPower(0);
+//                linearRight.setPower(0);
+//            }
 
             // Movement logic
             double drive = -gamepad1.left_stick_y;
@@ -228,17 +228,17 @@ public class StudioTeleop extends LinearOpMode {
                     leftFront.getCurrentPosition(), leftBack.getCurrentPosition(),
                     rightFront.getCurrentPosition(), rightBack.getCurrentPosition());
 
-            telemetry.addData("Slide Motor Positions",
-                    "LL: %d | LR: %d",
-                    linearLeft.getCurrentPosition(), linearRight.getCurrentPosition());
+//            telemetry.addData("Slide Motor Positions",
+//                    "LL: %d | LR: %d",
+//                    linearLeft.getCurrentPosition(), linearRight.getCurrentPosition());
 
             telemetry.addData("Motor Powers",
                     "LF: %.2f | LB: %.2f | RF: %.2f | RB: %.2f",
                     leftFront.getPower(), leftBack.getPower(), rightFront.getPower(), rightBack.getPower());
 
-            telemetry.addData("Slide Motor Powers",
-                    "LL: %.2f | LR: %.2f",
-                    linearLeft.getPower(), linearRight.getPower());
+//            telemetry.addData("Slide Motor Powers",
+//                    "LL: %.2f | LR: %.2f",
+//                    linearLeft.getPower(), linearRight.getPower());
 
             telemetry.update();
 
