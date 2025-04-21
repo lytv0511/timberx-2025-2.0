@@ -193,7 +193,6 @@ public class StudioTeleop extends LinearOpMode {
 //                linearRight.setPower(0);
 //            }
 
-            // Movement logic
             double drive = -gamepad1.left_stick_y;
             double strafe = -gamepad1.left_stick_x;
             double turn = gamepad1.right_stick_x;
@@ -217,7 +216,6 @@ public class StudioTeleop extends LinearOpMode {
             leftBack.setPower(leftBackPower / max);
             rightBack.setPower(rightBackPower / max);
 
-            // Telemetry updates
             telemetry.addData("Mode", isModeTwo ? "Scoring Mode" : "Pickup Mode");;
             telemetry.addData("Hold Slides Mode", holdSlidesMode ? "Active" : "Inactive");
             telemetry.addData("Aiming Mode", isHoverMode ? "Aiming hover" : "Ground");

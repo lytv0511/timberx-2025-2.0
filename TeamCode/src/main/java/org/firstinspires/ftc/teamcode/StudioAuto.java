@@ -7,23 +7,15 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 @Autonomous(name = "StudioAuto", group = "Autonomous")
 public class StudioAuto extends LinearOpMode {
-    // Declare four drive motors
     private DcMotor leftFront, rightFront, leftBack, rightBack;
-
-    // Declare servos
     private Servo clawServo, clawArmServo;
-
-    // Declare odometry system
     private ThreeWheelOdometryTest odometry;
-
-    // Correction factors
     private static final double strafeCorrectionFactor = 10.0 / 9.0;
     private static final double forwardBackwardCorrectionFactor = 10.0 / 11.0;
     private static final double angleCorrectionFactor = 90.0 / 45.0;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        // Initialize motors
         leftFront = hardwareMap.get(DcMotor.class, "leftFront");
         rightFront = hardwareMap.get(DcMotor.class, "rightFront");
         leftBack = hardwareMap.get(DcMotor.class, "leftBack");
@@ -31,19 +23,16 @@ public class StudioAuto extends LinearOpMode {
         clawServo = hardwareMap.get(Servo.class, "clawServo");
         clawArmServo = hardwareMap.get(Servo.class, "clawArmServo");
 
-        // Set motor directions
         leftFront.setDirection(DcMotor.Direction.FORWARD);
         rightFront.setDirection(DcMotor.Direction.REVERSE);
         leftBack.setDirection(DcMotor.Direction.FORWARD);
         rightBack.setDirection(DcMotor.Direction.REVERSE);
 
-        // Set motor zero power behavior
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        // Initialize odometry
         odometry = new ThreeWheelOdometryTest(hardwareMap);
 
         telemetry.addData("Status", "Waiting for start command...");
@@ -52,32 +41,26 @@ public class StudioAuto extends LinearOpMode {
 
         if (opModeIsActive()) {
             while (opModeIsActive()) {
-                // Update odometry
                 odometry.updatePose();
 
-                // Get current position
                 double x = odometry.getX();
                 double y = odometry.getY();
                 double heading = odometry.getHeading();
 
-                // Display position data
                 telemetry.addData("X", x);
                 telemetry.addData("Y", y);
                 telemetry.addData("Heading (rad)", heading);
                 telemetry.update();
             }
 
-            // Claw arm initialization
             clawArmServo.setPosition(0.87);
             sleep(500);
 
-            // Autonomous movements
             strafeLeft(0.5, 36);
             driveBackward(0.5, 54);
             turnLeft(0.3, 45);
             driveBackward(0.5, 13);
 
-            // Claw operations
             clawArmServo.setPosition(0.87);
             clawServo.setPosition(0.4);
             sleep(1000);
@@ -86,7 +69,6 @@ public class StudioAuto extends LinearOpMode {
             driveForward(0.5, 3);
             turnLeft(0.3, 45);
 
-            // Second placement
             clawArmServo.setPosition(0.07);
             sleep(1000);
             driveForward(0.5, 14);
@@ -98,7 +80,6 @@ public class StudioAuto extends LinearOpMode {
             driveBackward(0.5, 3);
             turnRight(0.3, 45);
 
-            // Third placement
             driveBackward(0.5, 13);
             clawArmServo.setPosition(0.87);
             clawServo.setPosition(0.4);
@@ -108,7 +89,6 @@ public class StudioAuto extends LinearOpMode {
             driveForward(0.5, 3);
             turnLeft(0.3, 45);
 
-            // Move to final position
             strafeLeft(0.5, 31);
             clawArmServo.setPosition(0.07);
             sleep(1000);
@@ -126,7 +106,6 @@ public class StudioAuto extends LinearOpMode {
         }
     }
 
-    // Drive functions
     private void drive(double lfPower, double rfPower, double lbPower, double rbPower, long duration) throws InterruptedException {
         leftFront.setPower(lfPower);
         rightFront.setPower(rfPower);
